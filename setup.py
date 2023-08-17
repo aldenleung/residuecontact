@@ -10,7 +10,7 @@ requirements = ["biopython>=1.80",
 
 setup(
 	name="residuecontact",
-	version="0.0.2",
+	version="0.0.3",
 	author="Alden Leung",
 	author_email="alden.leung@gmail.com",
 	description="A utility package to generate 3D residue distance graph",

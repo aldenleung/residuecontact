@@ -137,6 +137,59 @@ def _zip_two_ranges(r1, r2):
 			assert False
 	assert i1 == len(r1) and i2 == len(r2)
 
+def get_sifts_pdbresidue_to_uniprot_map(file):
+	class PDB_Uniprot_Map_Item():
+		def __init__(self, pdb, chain, uniprot, pdb_uniprot_ranges):
+			self.pdb = pdb
+			self.chain = chain
+			self.uniprot = uniprot
+			self.pdb_uniprot_ranges = pdb_uniprot_ranges
+			
+	class PDB_Uniprot_Map():
+		def __init__(self, db):
+			self.db = db
+		def __contains__(self, key):
+			pdb, chain, res = key.split("_")
+			if pdb not in self.db:
+				return False
+			if chain not in self.db[pdb]:
+				return False
+			for pdb_range, uniprot_range in self.db[pdb][chain].pdb_uniprot_ranges:
+				resi = None
+				try:
+					resi = int(res)
+				except:
+					pass
+				if res in pdb_range or (resi is not None and resi in pdb_range):
+					return True
+			return False
+		def __getitem__(self, key):
+			pdb, chain, res = key.split("_")
+			for pdb_range, uniprot_range in self.db[pdb][chain].pdb_uniprot_ranges:
+				resi = None
+				try:
+					resi = int(res)
+				except:
+					pass
+				if res in pdb_range or (resi is not None and resi in pdb_range):
+					if isinstance(uniprot_range, range) and isinstance(pdb_range, range):
+						return self.db[pdb][chain].uniprot + "_" + str(resi - pdb_range.start + uniprot_range.start)
+					else:
+						return f"{self.db[pdb][chain].uniprot}_{uniprot_range[0]}"
+	
+	
+	db = defaultdict(dict)
+	with DelimitedReader(file, header=True) as dr:
+		for d in dr:
+			if any(v == "nan" for v in d.values()):
+				continue
+			pdb_ranges = list(map(parse_sifts_range, d["MappableResInPDBChainOnPDBBasis"][1:-1].split(",")))
+			uniprot_ranges = list(map(parse_sifts_range, d["MappableResInPDBChainOnUniprotBasis"][1:-1].split(",")))
+			pdb_uniprot_ranges = list(_zip_two_ranges(pdb_ranges, uniprot_ranges))
+			db[d["PDB"]][d["Chain"]] = PDB_Uniprot_Map_Item(d["PDB"],d["Chain"], d["UniProt"], pdb_uniprot_ranges)
+			
+	return PDB_Uniprot_Map(db)
+
 def get_alphafold_pdbresidue_to_uniprot_map(file):
 	'''
 	Create an ID-map (dictionary) of alphafold PDB residues to uniprot residues 

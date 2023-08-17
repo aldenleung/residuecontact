@@ -32,7 +32,7 @@ Users could generate their own dictionary, with keys as PDBID_CHAINID_RESSEQ; an
 Here we provide two methods to process the map from sifts and alphafold.
 
 ```python
-from residuecontact import get_alphafold_pdbresidue_to_uniprot_map
+from residuecontact import get_sifts_pdbresidue_to_uniprot_map, get_alphafold_pdbresidue_to_uniprot_map
 spmap_sifts = get_sifts_pdbresidue_to_uniprot_map("pdbresiduemapping.txt")
 spmap_alphafold = get_alphafold_pdbresidue_to_uniprot_map("alphafold2residuemapping.txt")
 ```
