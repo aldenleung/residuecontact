@@ -236,7 +236,7 @@ def get_alphafold_pdbresidue_to_uniprot_map(file):
 	
 	db = defaultdict(dict)
 	with DelimitedReader(file, header=True) as dr:
-		for d in dr():
+		for d in dr:
 			if any(v == "nan" for v in d.values()):
 				continue
 			pdb_ranges = list(map(parse_sifts_range, d["PDB_Resi"][1:-1].split(",")))
@@ -346,7 +346,7 @@ def build_PDB_residues_connection_graph(pdbfiles, spmap, max_distance, atommode,
 			pdb_id = structure.id
 		else:
 			pdb_id = pdb_id_func(f)
-			pdb_file_handle = create_text_stream(f)
+			pdb_file_handle = create_text_stream(f, "r")
 			try:
 				structure = PDBParser(QUIET=True).get_structure(pdb_id, pdb_file_handle)
 			except:
@@ -414,7 +414,7 @@ def find_PDB_residues_distances_separated_by_models(pdb_id, f, pdb_residue_pairs
 	if isinstance(f, Bio.PDB.Structure.Structure):
 		structure = f
 	else:
-		pdb_file_handle = create_text_stream(f)
+		pdb_file_handle = create_text_stream(f, "r")
 		try:
 			structure = PDBParser(QUIET=True).get_structure(pdb_id, pdb_file_handle)
 		except:
